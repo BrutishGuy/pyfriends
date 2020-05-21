@@ -1,0 +1,25 @@
+#Input Parameters for the FoF algorithm
+
+#Cosmology 
+h 		0.73
+O_lam 	0.7
+O_m 	0.3
+O_k  	0.0
+
+#Survey Property
+MagLim		11.75 
+vf		    1000.
+red_start	300.
+red_end 	400000.
+Proj_Limit  2.1
+Vel_Limit 	1500.
+runs 		10
+d0_i 		0.46
+d0_f 		0.66
+v0 			350.
+edge_cut 	0.5
+
+#Shecter Params
+alpha		-1.02
+M_star		-24.2
+Phi_star	0.0108			

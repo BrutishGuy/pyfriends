@@ -1,9 +1,9 @@
-###########################
-#
-# PyFriends Function Bank
-# Trystan Lambert 
-#
-###########################
+#################################
+#				#
+# PyFriends Function Bank	#
+# Trystan Lambert		#
+#				#
+#################################
 
 ### Import ### 
 import numpy as np 
@@ -17,28 +17,28 @@ import time
 warnings.filterwarnings('error')  #catch the cos(dec) error that sometimes we get an invoke long astropy method in these instances.
 from tqdm import tqdm
 
-########################################
-########################################
-# 									   #
-#			GENERAL FUNCTIONS 		   #
-#									   #
-########################################
-########################################
+#########################################################
+#########################################################
+#							#
+#		     GENERAL FUNCTIONS			#
+#							#
+#########################################################
+#########################################################
 
 
-###################################################################################
-# Functions to read in the input parameters as set by the user and to calculate any 
-# constants that are needed throughout running the script. (These include once off
-# calculations which can be called as variables instead of calculating them many 
-# times troughout the program)
-#
-# input: name of text file with input parameters
-
-# output: little h, Magnitude Limit of Survey, fiducial velocity, begining velcoity, 
-#         ending velocity, projected limit, velocity limit, number of runs to be done, 
-# 		  initial d0 value, final d0 value, v0 constant value, alpha (shecter), 
-# 		  M_star (shecter), Phi star(shecter), H0, M_lim (Huchra & Geller, 1982), lum_const
-###################################################################################
+#########################################################################################################
+# Functions to read in the input parameters as set by the user and to calculate any 			#
+# constants that are needed throughout running the script. (These include once off			#
+# calculations which can be called as variables instead of calculating them many			#
+# times troughout the program)										#
+#													#
+# input: name of text file with input parameters							#
+#													#
+# output: little h, Magnitude Limit of Survey, fiducial velocity, begining velcoity,			#
+#         ending velocity, projected limit, velocity limit, number of runs to be done,			#
+# 		  initial d0 value, final d0 value, v0 constant value, alpha (shecter),			#
+# 		  M_star (shecter), Phi star(shecter), H0, M_lim (Huchra & Geller, 1982), lum_const	#
+#########################################################################################################
 
 
 def read_in_params(infile):
@@ -57,16 +57,16 @@ def calculate_params():
 	return integral1
 
 
-###################################################################################
-# Function used to average over a "circular" data set. I.e. if we were to average 
-# over lines of longitude the average of 359 and 1 would be 360/2 = 180 which is 
-# on the complete wrong side of the sky. The answer should be 0. This function 
-# corrrects that.
-#
-# input: one numpy array.
-
-# output: A single float. 
-###################################################################################
+#########################################################################################
+# Function used to average over a "circular" data set. I.e. if we were to average	# 
+# over lines of longitude the average of 359 and 1 would be 360/2 = 180 which is	#
+# on the complete wrong side of the sky. The answer should be 0. This function		#
+# corrrects that.									#
+#											#
+# input: one numpy array.								#
+#											#
+# output: A single float.								#
+#########################################################################################
 def WrapMean(array):  
 	if (np.max(array)-np.min(array)>=180) and len(np.where((array>90) & (array<270))[0])==0:
 		left=[]
@@ -86,29 +86,29 @@ def WrapMean(array):
 	return avg
 
 
-###################################################################################
-# Average Magnitude between two galaxies with some average velocity between them 
-# (see Huchra & Geller, (1982) & Crook et al., (2007)).
-#
-# input: The average velocity of the two galaxies as a single value and the Magnitude
-# 		 limit of the survey (MagLim should be read in from Params.txt).
-#
-# output: Single float of the average M12 value as defined in Huchra & Geller, (1982).
-###################################################################################
+#########################################################################################
+# Average Magnitude between two galaxies with some average velocity between them	# 
+# (see Huchra & Geller, (1982) & Crook et al., (2007)).					#
+#											#
+# input: The average velocity of the two galaxies as a single value and the Magnitude	#
+# 		 limit of the survey (MagLim should be read in from Params.txt).	#
+#											#
+# output: Single float of the average M12 value as defined in Huchra & Geller, (1982).	#
+#########################################################################################
 
 def M12(v_avg):
 	return MagLim-25-5*np.log10(v_avg/H0)
 
 
-###################################################################################
-# Shecter Luminosity Function as a function of Magnitude. This is parametized by 
-# M_star, alpha, and phi star (see Crook et al., (2007)). These parameters should be 
-# read in as input in the Params.txt file
-# 
-# input: The array of Magnitude (M) values.
-# 
-# output: An output array representing the Y values in the Shecter plot.
-###################################################################################
+#########################################################################################
+# Shecter Luminosity Function as a function of Magnitude. This is parametized by	# 
+# M_star, alpha, and phi star (see Crook et al., (2007)). These parameters should be	#
+# read in as input in the Params.txt file						#
+# 											#
+# input: The array of Magnitude (M) values.						#
+# 											#
+# output: An output array representing the Y values in the Shecter plot.		#
+#########################################################################################
 
 def LuminosityFunction(M):  #Used in all the integrals 
 	t2=10**(0.4*(alpha+1)*(M_star-M))
@@ -116,16 +116,16 @@ def LuminosityFunction(M):  #Used in all the integrals
 	return lum_const*t2*t3
 
 
-###################################################################################
-# Function which calculates the angular separation of two sources on sky in degrees
-#
-# input: ra of the first source, ra of the second source, dec of the first source
-#        dec of the second source. ra's and dec's can be either floating points or 
-#        arrays so long as they are consistent. i.e. ra1 float, dec1 float, ra2 array
-#        dec2 array etc. 
-#
-# output: single floating point value representing the angular separation
-###################################################################################
+#########################################################################################
+# Function which calculates the angular separation of two sources on sky in degrees	#
+#											#
+# input: ra of the first source, ra of the second source, dec of the first source	#
+#        dec of the second source. ra's and dec's can be either floating points or	#
+#        arrays so long as they are consistent. i.e. ra1 float, dec1 float, ra2 array	#
+#        dec2 array etc.								#
+#											#
+# output: single floating point value representing the angular separation		#
+#########################################################################################
 
 def angsep(ra1,ra2,dec1,dec2):
 	try:
@@ -141,16 +141,16 @@ def angsep(ra1,ra2,dec1,dec2):
 
 	return val
 
-###################################################################################
-# Function to calculate the projected onsky distance of an array of points against
-# a single value 
-#
-# input: first ra, second ra, first dec, second dec, first v, second v. Input can be 
-#        two floting points or a floating point and an array
-#
-# output: depending on input either a single floating point or an array of projected 
-#         on-sky distances
-###################################################################################
+#########################################################################################
+# Function to calculate the projected onsky distance of an array of points against	#
+# a single value									#
+#											#
+# input: first ra, second ra, first dec, second dec, first v, second v. Input can be	#
+#        two floting points or a floating point and an array				#
+#											#
+# output: depending on input either a single floating point or an array of projected	#
+#         on-sky distances								#
+#########################################################################################
 
 def Projected_OnSky_Distance(ra1,ra2,dec1,dec2,v1,v2):
 	separations = angsep(ra1,ra2,dec1,dec2)
@@ -161,23 +161,23 @@ def Projected_OnSky_Distance(ra1,ra2,dec1,dec2,v1,v2):
 
 
 
-########################################
-########################################
-# 									   #
-#	    FOF algorithm functions		   #
-#									   #
-########################################
-########################################
+#########################################
+#########################################
+#					#
+#	  FOF algorithm functions	#
+#					#
+#########################################
+#########################################
 
 
-###################################################################################
-# Base function for finding friends. Takes an index which points to the position of 
-# a galaxy in some array/arrays and finds all the "friends", which are galaxy which 
-# meet the criteira of being friends (defined in Huchra & Geller et al., (1982))
-#
-# input: index of the galaxy, velocity array, ra array, dec array, v0 constant,
-#        d0 constant.
-###################################################################################
+#########################################################################################
+# Base function for finding friends. Takes an index which points to the position of	# 
+# a galaxy in some array/arrays and finds all the "friends", which are galaxy which	#
+# meet the criteira of being friends (defined in Huchra & Geller et al., (1982))	#
+#											#
+# input: index of the galaxy, velocity array, ra array, dec array, v0 constant,		#
+#        d0 constant.									#
+#########################################################################################
 
 def FindFriends(galaxy_index,v,ra,dec,v0,d0): #add checked to the end if need be
 	
@@ -214,9 +214,9 @@ def FindFriends(galaxy_index,v,ra,dec,v0,d0): #add checked to the end if need be
 	return v_cut[pos]
 
 
-###################################################################################
-# 
-###################################################################################
+#########################################################################################
+#											#
+#########################################################################################
 
 def FindGroupQuick(galaxy_index,v,ra,dec,v0,d0,group_vlim,lim_rad):
 	friends_after=FindFriends(galaxy_index,v,ra,dec,v0,d0)
@@ -254,9 +254,9 @@ def FindGroupQuick(galaxy_index,v,ra,dec,v0,d0,group_vlim,lim_rad):
 
 
 
-###################################################################################
-# 
-###################################################################################
+#########################################################################################
+#											#
+#########################################################################################
 
 def run_fof(Ra,Dec,v,v0,d0,vlim,dlim):
 
@@ -294,9 +294,9 @@ def run_fof(Ra,Dec,v,v0,d0,vlim,dlim):
 	return groups,notgroups
 
 
-###################################################################################
-# 
-###################################################################################
+#################################################################################
+#										# 
+#################################################################################
 
 def FoF(Ra,Dec,v,Vel_Limit,projected_limit,output_file):
 	dd0=d0_f-d0_i
@@ -317,9 +317,9 @@ def FoF(Ra,Dec,v,Vel_Limit,projected_limit,output_file):
 			f.write('\n')
 		f.close()
 
-
+################################
 ##### Reading in Constants #####
-
+################################
 h,Om_e,Om_m,Om_k,Dh,MagLim,vf,red_start,redlim,projected_limit,Vel_Limit,runs,d0_i,d0_f,v0,cutoff,alpha,M_star,Phi_star,H0,M_lim,lum_const = read_in_params('Params.txt')
 integral1 = calculate_params()
 

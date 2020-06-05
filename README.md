@@ -7,7 +7,7 @@ A detailed description of the algorithm can be found in the paper above linked o
 
 ## Installation
 
-Download the repository through Git (For Windows, you can download Git Bash For Windows here).
+Download the repository through Git ([For Windows, you can download Git Bash For Windows here](https://gitforwindows.org/)).
 
 `git clone https://github.com/BrutishGuy/pyfriends.git`
 

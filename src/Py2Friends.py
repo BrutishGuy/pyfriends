@@ -1,8 +1,7 @@
 
 #################################
-# Algorithm testing  function
-#MOST RECENT USE THIS TO MAKE THE GENRAL ONE
-###############################
+# Friends-of-Friends implementation as used in Lambert et. al., (2020)
+#################################
 
 
 import numpy as np 
@@ -26,7 +25,6 @@ h,Om_e,Om_m,Om_k,Dh,MagLim,vf,red_start,redlim,projected_limit,Vel_Limit,runs,d0
 integral1 = Funcs.calculate_params()
 
 ######################################################## This is just getting the Ra,Dec,v (plus ID's) ###################################################
-#infile = 'Virgo_Test_data.txt'#VIRGO TEST SET 
 infile="./data/2mrs_1175_done.dat"
 Ra, Dec, l, b, v, K = np.loadtxt(infile, usecols=(1,2,3,4,24,5),unpack=True)  #readining in numerical data
 MASXJIDs,other_names=np.loadtxt(infile,usecols=(0,28),dtype=str,unpack=True) #reading in float data
@@ -47,7 +45,6 @@ run_results=[]
 for i in range(len(lines)):
 	run_results.append(np.array([int(x) for x in lines[i].split()]))  #make the array of our list which splits each string into a list of integers (galaxy labels)
 
-
 #done reading in 
 
 ### Graph theory time #####
@@ -60,7 +57,7 @@ print
 print 'Writing to File'
 prefix_string='2MRS'
 
-
+### Writing Data to different file formats
 #Write edge metadata to a file quickly (May want to move this into a proper place )
 edge_1,edge_2,weight=np.zeros(len(edges)),np.zeros(len(edges)),np.zeros(len(edges)) #split the edges tuples triplates into 3 different arrays
 for i in range(len(edges)):
@@ -128,7 +125,7 @@ for i in range(len(levels)-1):
 
 ng_vcmb,ng_zcmb,ng_dist,nx,ny,nz = Funcs.Convert_to_XYZ(l[notgroups],b[notgroups],v[notgroups])
 
-n_K=K[notgroups]-5.*np.log10(ng_dist*1e6)+5
+n_K=K[notgroups]-5.*np.log10(ng_dist*1e6)+5   #working out the absolute magnitudes and then calculating a luminoisty scale for partiview files
 ng_lum_scale=-1.*(K[notgroups]-5.*np.log10(ng_dist*1e6)+5+20.) #Adding 20 to the current magnitudes and then inverting them to make (most of them) positive
 ng_ls_floor=-3. #setting a floor level for the lum_scale (important for partiview to keep some dynamic range)
 floor=np.where(ng_lum_scale<ng_ls_floor)[0]   #finding where all the lumscale values are less than the floor 

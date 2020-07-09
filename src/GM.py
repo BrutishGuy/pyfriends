@@ -1,11 +1,6 @@
 ############################################################################
 #
 # Group Refinement using graph theory
-# module which MUST fit into the main group finder code effortlessly
-# Will replace the old GraphModule.py
-#
-# Trystan Lambert 
-# 28/09/2018
 #
 ###########################################################################
 
@@ -39,26 +34,20 @@ def Get_Edges(results_list,cutoff,no_runs):
 	print 'Generating Edges:'
 	print '\t 1 of 2: Calculating Pairs'
 	edges_x,edges_y=[],[]
-	for i in tqdm(range(len(results_list))):   #start a loading bar for calculating all the different pairings
+	for i in range(len(results_list)):   #start a loading bar for calculating all the different pairings
 		tupples=Get_Tupples(results_list[i])   #search through every group that was found in the results and construct the pairings for that group
 		edges_x+=tupples[0] 					#add the pairings into 2 lists (x,y) tupple list
 		edges_y+=tupples[1]
 	edges_x,edges_y=np.array(edges_x),np.array(edges_y)     #convert into arrays (so we can make use of the np.where function)
+	all_edges = zip(edges_x,edges_y)
 
 	print '\t 2 of 2: Calculating Weights'
-	Weights,Edges_x,Edges_y=[],[],[]   #New lists will be the final edges arrays used for the graph. 
-	checked=np.zeros(len(edges_x))     #checking array so that we waste absolutely no time redoing things
-	for i in tqdm(range(len(edges_y))):
-		if checked[i]==0:
-			x=np.where(edges_x==edges_x[i])    #find everywhere where this x[i] value is found in the array
-			y=np.where(edges_y==edges_y[i])    #find everywhere where this y[i] value is found in the array
-			val=np.intersect1d(x,y)            #find the common places where both x=x[i] and y=y[i] thus all instances where these galxaies where in the same group
-			checked[val]=1 					   #remove that pairing from the search and carry on
-			Number_of_instances=float(len(val)) 	   # the length of the intersection actually tells us how many times that pairing occured. 
-			Percentage_of_instances=Number_of_instances/no_runs   #work out what percentage of the time this particular pairing showed up
-			Weights.append(Percentage_of_instances)
-			Edges_x.append(edges_x[i])
-			Edges_y.append(edges_y[i])
+	
+	string_tupples = np.array([str(edges_x[i])+' '+str(edges_y[i]) for i in range(len(edges_x))])    #combine the tupples into a single long string array which can be quickly sorted
+	tupples, counts = np.unique(string_tupples,return_counts = True)
+	Weights = counts.astype(float)/no_runs
+	tupple_arrays = np.array([np.array([int(tupples[i].split(' ')[0]),int(tupples[i].split(' ')[1])]) for i in range(len(tupples))]) #convert into 2d array easily split
+	Edges_x, Edges_y = tupple_arrays[:,0], tupple_arrays[:,1]
 	return Edges_x,Edges_y,Weights
 
 # One line solution to get all the nodes which have shown up. This represents all the galaxies which have been found in a group ever. 

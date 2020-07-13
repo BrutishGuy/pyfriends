@@ -21,11 +21,11 @@ import IAPUC
 
 warnings.filterwarnings('error')  #catch the cos(dec) error that sometimes we get an invoke long astropy method in these instances.
 
-h,Om_e,Om_m,Om_k,Dh,MagLim,vf,red_start,redlim,projected_limit,Vel_Limit,runs,d0_i,d0_f,v0,cutoff,alpha,M_star,Phi_star,H0,M_lim,lum_const= Funcs.read_in_params('config.txt')
+h,Om_e,Om_m,Om_k,Dh,MagLim,vf,red_start,redlim,projected_limit,Vel_Limit,runs,d0_i,d0_f,v0i,v0f,cutoff,alpha,M_star,Phi_star,H0,M_lim,lum_const= Funcs.read_in_params('../config.txt')
 integral1 = Funcs.calculate_params()
 
 ######################################################## This is just getting the Ra,Dec,v (plus ID's) ###################################################
-infile="./data/2mrs_1175_done.dat"
+infile="../data/2mrs_1175_done.dat"
 Ra, Dec, l, b, v, K = np.loadtxt(infile, usecols=(1,2,3,4,24,5),unpack=True)  #readining in numerical data
 MASXJIDs,other_names=np.loadtxt(infile,usecols=(0,28),dtype=str,unpack=True) #reading in float data
 

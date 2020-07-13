@@ -42,14 +42,14 @@ from tqdm import tqdm
 
 
 def read_in_params(infile):
-	h,O_lam,O_m,O_k,MagLim,vf,red_start,redlim,Proj_Limit,Vel_Limit,runs,d0_i,d0_f,v0,cutoff,alpha,M_star,Phi_star=np.loadtxt('Params.txt',usecols=(1))
+	h,O_lam,O_m,O_k,MagLim,vf,red_start,redlim,Proj_Limit,Vel_Limit,runs,d0_i,d0_f,v0i,v0f,cutoff,alpha,M_star,Phi_star=np.loadtxt(infile,usecols=(1))
 	runs = int(runs)
 	Phi_star=Phi_star*(h**3)
 	H0 = 100*h
 	M_lim = MagLim-25-5*np.log10(vf/H0)
 	lum_const=0.4*np.log(10)*Phi_star
 	Dh=3000*(1./h)
-	return h,O_lam,O_m,O_k,Dh,MagLim,vf,red_start,redlim,Proj_Limit,Vel_Limit,runs,d0_i,d0_f,v0,cutoff,alpha,M_star,Phi_star,H0,M_lim,lum_const
+	return h,O_lam,O_m,O_k,Dh,MagLim,vf,red_start,redlim,Proj_Limit,Vel_Limit,runs,d0_i,d0_f,v0i,v0f,cutoff,alpha,M_star,Phi_star,H0,M_lim,lum_const
 
 
 def calculate_params():
@@ -243,13 +243,12 @@ def FindGroupQuick(galaxy_index,v,ra,dec,v0,d0,group_vlim,lim_rad):
 		Pos=np.where(DD12<=lim_rad)[0]
 		friends_before=friends_before[V_cut][Pos]
 		new=np.intersect1d(friends_before,new)
+		new = np.array(list(set(friends_before).intersection(set(new))))
 		variable=[]
 		for i in range(len(new)):
 			variable+=list(FindFriends(new[i],v,ra,dec,v0,d0))
 		friends_after=np.unique(np.append(friends_before,variable)).astype(int)
 		new=np.setdiff1d(friends_after,friends_before)
-
-		#print '\t', len(friends_before), len(new), len(friends_after)
 	return friends_after
 
 
@@ -262,13 +261,12 @@ def run_fof(Ra,Dec,v,v0,d0,vlim,dlim):
 
 	checked=np.zeros(len(Ra))
 	Groups=[]
-	#tic=datetime.datetime.now() 
+	tic=datetime.datetime.now() 
 	local_cut=checked
 	local_cut=np.where(checked==0)[0]   
 	while len(local_cut)>1:   
 		local_cut=np.where(checked==0)[0]
 		local_p=np.random.randint(0,len(local_cut))
-		#print len(local_cut)
 		local_ra=Ra[local_cut]
 		local_dec=Dec[local_cut]
 		local_v=v[local_cut]
@@ -276,9 +274,9 @@ def run_fof(Ra,Dec,v,v0,d0,vlim,dlim):
 		group=local_cut[local_group]
 		Groups.append(group)       
 		checked[group]=1
-		#local_cut=np.where(checked==0)[0]
-	#toc=datetime.datetime.now()
-	#print toc-tic
+	toc=datetime.datetime.now()
+	print 'Time Taken on Run: ',toc-tic
+	print
 
 	groups=[]
 	notgroups=[]
@@ -299,16 +297,19 @@ def run_fof(Ra,Dec,v,v0,d0,vlim,dlim):
 #################################################################################
 
 def FoF(Ra,Dec,v,Vel_Limit,projected_limit,output_file):
-	dd0=d0_f-d0_i
-	it=dd0/runs
+	d_it=float(d0_f-d0_i)/runs   #onsky iterations
+	v_it = float(v0f-v0i)/runs 	 #velocity iterations
+
 	f=open(output_file,'w')
 	f.close()
 	for i in range(runs):
 		f=open(output_file,'a')
-		print i#'\t\t RUN NUMBER ', i 
+		print i
 
-		d0=d0_i+it*i
-		print '\t\t d0 = ', d0
+		d0=d0_i+d_it*i
+		v0=v0i+v_it*i
+		print '\t\t d0 = ', round(d0,2)
+		print '\t\t v0 = ', round(v0,2)
 		t=run_fof(Ra,Dec,v,v0,d0,Vel_Limit,projected_limit)
 		
 		for trial in range(len(t[0])):
@@ -320,7 +321,7 @@ def FoF(Ra,Dec,v,Vel_Limit,projected_limit,output_file):
 ################################
 ##### Reading in Constants #####
 ################################
-h,Om_e,Om_m,Om_k,Dh,MagLim,vf,red_start,redlim,projected_limit,Vel_Limit,runs,d0_i,d0_f,v0,cutoff,alpha,M_star,Phi_star,H0,M_lim,lum_const = read_in_params('Config.txt')
+h,Om_e,Om_m,Om_k,Dh,MagLim,vf,red_start,redlim,projected_limit,Vel_Limit,runs,d0_i,d0_f,v0i,v0f,cutoff,alpha,M_star,Phi_star,H0,M_lim,lum_const = read_in_params('../config.txt')
 integral1 = calculate_params()
 
 

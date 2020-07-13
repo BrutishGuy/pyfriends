@@ -320,7 +320,7 @@ def FoF(Ra,Dec,v,Vel_Limit,projected_limit,output_file):
 ################################
 ##### Reading in Constants #####
 ################################
-h,Om_e,Om_m,Om_k,Dh,MagLim,vf,red_start,redlim,projected_limit,Vel_Limit,runs,d0_i,d0_f,v0,cutoff,alpha,M_star,Phi_star,H0,M_lim,lum_const = read_in_params('Params.txt')
+h,Om_e,Om_m,Om_k,Dh,MagLim,vf,red_start,redlim,projected_limit,Vel_Limit,runs,d0_i,d0_f,v0,cutoff,alpha,M_star,Phi_star,H0,M_lim,lum_const = read_in_params('Config.txt')
 integral1 = calculate_params()
 
 

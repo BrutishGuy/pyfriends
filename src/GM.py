@@ -6,9 +6,7 @@
 
 
 import numpy as np
-import seaborn as sb 
 import networkx as nx
-import pandas as pd
 import matplotlib.pyplot as plt
 from astropy import units 
 from astropy.coordinates import SkyCoord

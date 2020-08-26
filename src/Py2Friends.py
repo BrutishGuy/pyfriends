@@ -319,19 +319,88 @@ def FoF(Ra,Dec,v,Vel_Limit,projected_limit,output_file):
 			f.write('\n')
 		f.close()
 
+#########################################################################################
+# Function which can flag and identify groups which have been affected by faux		#
+# connections. The subgroups in these cases are then converted into their own groups.	#
+#											#
+# input: Ra, Dec, and v arrays from the survey. The group index list, the subgrouping	#
+#        index list and the normed-weightings of each member  				#
+#########################################################################################
+
+# Function which will search for groups which have faux connections i.e. big groups which are connected
+# by very few connections. These should be groups in their own right. 
+# Optional procedure the user can decide.  
+def Clean_Bad_Groups(Ra,Dec,v,groups,sub_groupings,scores): 
+	print 'Cleaning faux connctions'
+	#flagging the suspicious groups
+	no_subs = np.array([len(sub) for sub in sub_groupings]) #Work out the number of subgroups based on the groupings
+	avg_scores = np.array([np.mean(score) for score in scores]) #Work out the average scores of the groups
+	flagged = np.where((no_subs>2) & (avg_scores < 0.5))[0]  #find where groups have more than 2 subgroups and their average score is < 50%
+	flagged_groups = np.array(groups)[flagged]
+	flagged_sub_groups = np.array(sub_groupings)[flagged]
+	new_groups = []
+	#correcting the groups
+	for i in range(len(flagged_groups)):
+		#calculate the new groups centers
+		new_RA_center,new_Dec_center,new_Vel_center,max_sep,new_group_members = [],[],[],[],[]
+		for j in range(len(flagged_sub_groups[i])):
+			current_members = np.array(flagged_sub_groups[i][j])
+			new_group_members.append(current_members)
+			ra_center = WrapMean(Ra[current_members])
+			dec_center = np.mean(Dec[current_members])
+			vel_center = np.mean(v[current_members])
+
+			new_RA_center.append(ra_center)
+			new_Dec_center.append(dec_center)
+			new_Vel_center.append(vel_center)
+
+			proj_distances = Projected_OnSky_Distance(Ra[current_members],ra_center,Dec[current_members],dec_center,v[current_members],vel_center)
+			max_sep.append(np.max(proj_distances))
+
+		#find the galaxies which are not in any subgroup (they will have to be placed on the closest on sky one)
+		new_RA_center = np.array(new_RA_center)
+		new_Dec_center = np.array(new_Dec_center)
+		new_Vel_center = np.array(new_Vel_center)
+		max_sep = np.array(max_sep)
+		new_group_members = np.array(new_group_members)
+		
+		#put left overs in the correct new-groups
+		left_overs = np.setdiff1d(np.array(flagged_groups[i]),np.concatenate(flagged_sub_groups[i]))
+		for left_over in left_overs:
+			# find the closest on sky center that we can 
+			projected_onsky = Projected_OnSky_Distance(Ra[left_over],new_RA_center,Dec[left_over],new_Dec_center,v[left_over],new_Vel_center)
+			smallest_projected_onsky = np.min(projected_onsky)
+			pos_spos = np.where(projected_onsky==smallest_projected_onsky)[0][0]
+			if smallest_projected_onsky <= max_sep[pos_spos]:
+				new_group_members[pos_spos] = np.append(new_group_members[pos_spos],left_over)
+
+		new_groups.append(new_group_members)
+	new_groups = np.concatenate(new_groups)
+	new_groups = [list(new_group) for new_group in new_groups]
+	new_sub_groups = [[new_group] for new_group in new_groups]  #no more subgoups for these things
+
+	#remove the bad groups and sub groups and then just attach the new ones at the end of the list 
+	keep_groups = np.setdiff1d(np.arange(len(groups)),flagged)  # all the groups that we want to keep
+	new_group_list = list(np.array(groups)[keep_groups]) + new_groups
+	new_sub_groups_list = list(np.array(sub_groupings)[keep_groups]) + new_sub_groups
+	return new_group_list,new_sub_groups_list
+
 #################################################################################
 #										# 
 #################################################################################
-def FoF_full(Ra,Dec,v):
+
+def FoF_full(Ra,Dec,v,clean_faux = False):
 	FoF(Ra,Dec,v,Vel_Limit,projected_limit,'run_results.txt')
 	f=open('run_results.txt') #open the text file 
 	lines=f.readlines()   #make a list of each row  (which is a string)
-	run_results=[]
-	for i in range(len(lines)):
-		run_results.append(np.array([int(x) for x in lines[i].split()]))  #make the array of our list which splits each string into a list of integers (galaxy labels)
+	f.close()
+	run_results = [np.array([int(x) for x in line.split()]) for line in lines]
 
 	### Graph theory time #####
 	groups,edges,weighting,weighting_normed,sub_groupings=GM.Stabalize(run_results,cutoff,runs)
+	if clean_faux == True:
+		groups,sub_groupings = Clean_Bad_Groups(Ra,Dec,v,groups,sub_groupings,weighting_normed)
+
 	notgroups=np.setdiff1d(np.arange(0,len(Ra)),np.concatenate(groups))
 	return groups,edges,weighting,weighting_normed,sub_groupings,notgroups
 
